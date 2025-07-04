@@ -2,8 +2,8 @@ const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xffffff); // Set white background
 
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-// Set camera higher and on the opposite side
-camera.position.set(0, 3, -5); // Y is higher, Z is negative
+// Set a reasonable default position (not too high or far)
+camera.position.set(0, 3, -5);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -79,31 +79,19 @@ loader.load('models/port_three.gltf', function (gltf) {
     });
     scene.add(model);
 
-    // Adjust camera and controls to fit model
+    // Adjust camera and controls to fit model (less aggressive multipliers)
     const maxDim = Math.max(size.x, size.y, size.z);
-    const camZ = -maxDim * 2; // Negative Z for the other side
-    camera.position.set(0, maxDim * 0.7, camZ); // Higher Y, negative Z
+    camera.position.set(0, maxDim * 0.7, -maxDim * 1.5);
+    camera.lookAt(0, -1, 0);
     controls.target.set(0, -1, 0);
     controls.update();
 }, undefined, function (error) {
-    console.error(error);
+    console.error("GLTF load error:", error);
 });
-
-// Sun intensity slider logic
-const sunSlider = document.getElementById('sunIntensity');
-const sunValue = document.getElementById('sunValue');
-if (sunSlider && sunValue) {
-    sunSlider.addEventListener('input', function () {
-        sun.intensity = parseFloat(this.value);
-        sunValue.textContent = this.value;
-    });
-}
 
 // Sun orientation slider logic
 const sunAzimuth = document.getElementById('sunAzimuth');
 const sunElevation = document.getElementById('sunElevation');
-const azimuthValue = document.getElementById('azimuthValue');
-const elevationValue = document.getElementById('elevationValue');
 
 function updateSunPosition() {
     // Convert degrees to radians
@@ -115,8 +103,6 @@ function updateSunPosition() {
     const y = radius * Math.sin(elevationRad);
     const z = radius * Math.cos(elevationRad) * Math.cos(azimuthRad);
     sun.position.set(x, y, z);
-    azimuthValue.textContent = sunAzimuth.value;
-    elevationValue.textContent = sunElevation.value;
 }
 
 // Initialize sun position

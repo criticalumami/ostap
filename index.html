@@ -9,13 +9,8 @@
 <body>
     <div id="threejs-container"></div>
     <div class="controls-panel">
-        <label for="sunAzimuth">Sun Azimuth:</label>
-        <input type="range" id="sunAzimuth" min="0" max="360" value="45">
-        <span id="azimuthValue">45</span>°
-        <br>
-        <label for="sunElevation">Sun Elevation:</label>
-        <input type="range" id="sunElevation" min="0" max="90" value="60">
-        <span id="elevationValue">60</span>°
+        <input type="range" id="sunAzimuth" min="0" max="360" value="45" class="small-slider">
+        <input type="range" id="sunElevation" min="0" max="90" value="60" class="small-slider">
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.rawgit.com/mrdoob/three.js/r128/examples/js/loaders/GLTFLoader.js"></script>
