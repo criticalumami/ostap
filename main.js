@@ -69,7 +69,9 @@ loader.load('models/port_three.gltf', function (gltf) {
             child.material = new THREE.MeshStandardMaterial({
                 color: 0x888888, // medium gray
                 roughness: 0.6,
-                metalness: 0.1
+                metalness: 0.1,
+                transparent: true,      // Enable transparency
+                opacity: 0.7            // Adjust as needed (0.0 - fully transparent, 1.0 - fully opaque)
             });
             // Add edge lines
             const edges = new THREE.EdgesGeometry(child.geometry);
