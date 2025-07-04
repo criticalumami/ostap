@@ -49,7 +49,7 @@ canvas {
 
 .controls-panel input[type="range"]::-webkit-slider-runnable-track {
     height: 6px;
-    background: linear-gradient(90deg, #4f8cff 0%, #38e4ae 100%);
+    background: linear-gradient(90deg, #bbb 0%, #444 100%);
     border-radius: 3px;
 }
 
@@ -60,7 +60,7 @@ canvas {
     height: 18px;
     border-radius: 50%;
     background: #fff;
-    border: 2px solid #4f8cff;
+    border: 2px solid #444;
     box-shadow: 0 2px 8px rgba(79,140,255,0.15);
     cursor: pointer;
     margin-top: -6px;
@@ -68,7 +68,7 @@ canvas {
 }
 
 .controls-panel input[type="range"]:active::-webkit-slider-thumb {
-    border: 2px solid #38e4ae;
+    border: 2px solid #888;
 }
 
 .controls-panel input[type="range"]::-moz-range-thumb {
@@ -76,14 +76,14 @@ canvas {
     height: 18px;
     border-radius: 50%;
     background: #fff;
-    border: 2px solid #4f8cff;
+    border: 2px solid #444;
     box-shadow: 0 2px 8px rgba(79,140,255,0.15);
     cursor: pointer;
     transition: border 0.2s;
 }
 
 .controls-panel input[type="range"]:active::-moz-range-thumb {
-    border: 2px solid #38e4ae;
+    border: 2px solid #888;
 }
 
 .controls-panel input[type="range"]::-ms-thumb {
@@ -91,22 +91,28 @@ canvas {
     height: 18px;
     border-radius: 50%;
     background: #fff;
-    border: 2px solid #4f8cff;
+    border: 2px solid #444;
     box-shadow: 0 2px 8px rgba(79,140,255,0.15);
     cursor: pointer;
     transition: border 0.2s;
 }
 
 .controls-panel input[type="range"]:active::-ms-thumb {
-    border: 2px solid #38e4ae;
+    border: 2px solid #888;
 }
 
 .controls-panel input[type="range"]::-ms-fill-lower {
-    background: #4f8cff;
+    background: #bbb;
     border-radius: 3px;
 }
 .controls-panel input[type="range"]::-ms-fill-upper {
-    background: #38e4ae;
+    background: #444;
+    border-radius: 3px;
+}
+
+.controls-panel input[type="range"]::-moz-range-track {
+    height: 6px;
+    background: linear-gradient(90deg, #bbb 0%, #444 100%);
     border-radius: 3px;
 }
 
