@@ -65,6 +65,12 @@ loader.load('models/port_three.gltf', function (gltf) {
         if (child.isMesh) {
             child.castShadow = true;
             child.receiveShadow = true;
+            // Set grayscale material
+            child.material = new THREE.MeshStandardMaterial({
+                color: 0x888888, // medium gray
+                roughness: 0.6,
+                metalness: 0.1
+            });
             // Add edge lines
             const edges = new THREE.EdgesGeometry(child.geometry);
             const line = new THREE.LineSegments(
