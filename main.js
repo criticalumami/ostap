@@ -65,14 +65,11 @@ loader.load('models/port_three.gltf', function (gltf) {
         if (child.isMesh) {
             child.castShadow = true;
             child.receiveShadow = true;
-            // Set grayscale material
-            child.material = new THREE.MeshStandardMaterial({
-                color: 0x888888, // medium gray
-                roughness: 0.6,
-                metalness: 0.1,
-                transparent: true,      // Enable transparency
-                opacity: 0.7            // Adjust as needed (0.0 - fully transparent, 1.0 - fully opaque)
-            });
+            // Restore original material (remove forced grayscale)
+            // If you want to keep the model's original material, do not overwrite it:
+            // (Just remove the child.material = ... block entirely)
+            // If you want to ensure shadows, you can keep the castShadow/receiveShadow lines.
+            // No material assignment here.
             // Add edge lines
             const edges = new THREE.EdgesGeometry(child.geometry);
             const line = new THREE.LineSegments(
