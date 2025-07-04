@@ -2,13 +2,14 @@ const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xffffff); // Set white background
 
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(0, 1, 5); // Set a nice initial camera position
+// Set camera higher and on the opposite side
+camera.position.set(0, 3, -5); // Y is higher, Z is negative
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true; // Enable shadows
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-document.body.appendChild(renderer.domElement);
+document.getElementById('threejs-container').appendChild(renderer.domElement);
 
 // Add ambient light
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
@@ -80,13 +81,50 @@ loader.load('models/port_three.gltf', function (gltf) {
 
     // Adjust camera and controls to fit model
     const maxDim = Math.max(size.x, size.y, size.z);
-    const camZ = maxDim * 2;
-    camera.position.set(0, maxDim * 0.3, camZ);
+    const camZ = -maxDim * 2; // Negative Z for the other side
+    camera.position.set(0, maxDim * 0.7, camZ); // Higher Y, negative Z
     controls.target.set(0, -1, 0);
     controls.update();
 }, undefined, function (error) {
     console.error(error);
 });
+
+// Sun intensity slider logic
+const sunSlider = document.getElementById('sunIntensity');
+const sunValue = document.getElementById('sunValue');
+if (sunSlider && sunValue) {
+    sunSlider.addEventListener('input', function () {
+        sun.intensity = parseFloat(this.value);
+        sunValue.textContent = this.value;
+    });
+}
+
+// Sun orientation slider logic
+const sunAzimuth = document.getElementById('sunAzimuth');
+const sunElevation = document.getElementById('sunElevation');
+const azimuthValue = document.getElementById('azimuthValue');
+const elevationValue = document.getElementById('elevationValue');
+
+function updateSunPosition() {
+    // Convert degrees to radians
+    const azimuthRad = THREE.MathUtils.degToRad(parseFloat(sunAzimuth.value));
+    const elevationRad = THREE.MathUtils.degToRad(parseFloat(sunElevation.value));
+    // Spherical coordinates to Cartesian
+    const radius = 30;
+    const x = radius * Math.cos(elevationRad) * Math.sin(azimuthRad);
+    const y = radius * Math.sin(elevationRad);
+    const z = radius * Math.cos(elevationRad) * Math.cos(azimuthRad);
+    sun.position.set(x, y, z);
+    azimuthValue.textContent = sunAzimuth.value;
+    elevationValue.textContent = sunElevation.value;
+}
+
+// Initialize sun position
+if (sunAzimuth && sunElevation) {
+    sunAzimuth.addEventListener('input', updateSunPosition);
+    sunElevation.addEventListener('input', updateSunPosition);
+    updateSunPosition();
+}
 
 function animate() {
     requestAnimationFrame(animate);
