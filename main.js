@@ -48,9 +48,10 @@ controls.enableDamping = true;
 controls.dampingFactor = 0.08;
 controls.target.set(0, 0, 0);
 
+let model;
 const loader = new THREE.GLTFLoader();
-loader.load('models/port_three.gltf', function (gltf) {
-    const model = gltf.scene;
+loader.load('models/ostap.gltf', function (gltf) {
+    model = gltf.scene;
     // Center the model
     const box = new THREE.Box3().setFromObject(model);
     const center = box.getCenter(new THREE.Vector3());
@@ -119,6 +120,9 @@ if (sunAzimuth && sunElevation) {
 
 function animate() {
     requestAnimationFrame(animate);
+    if (model) {
+        model.rotation.y += 0.005;
+    }
     controls.update();
     renderer.render(scene, camera);
 }
