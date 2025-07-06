@@ -50,7 +50,7 @@ controls.target.set(0, 0, 0);
 
 let model;
 const loader = new THREE.GLTFLoader();
-loader.load('models/ostap.gltf', function (gltf) {
+loader.load('models/show.gltf', function (gltf) {
     model = gltf.scene;
     // Center the model
     const box = new THREE.Box3().setFromObject(model);
