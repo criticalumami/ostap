@@ -50,7 +50,7 @@ controls.target.set(0, 0, 0);
 
 let model;
 const loader = new THREE.GLTFLoader();
-loader.load('models/show.gltf', function (gltf) {
+loader.load('models/diag.gltf', function (gltf) {
     model = gltf.scene;
     // Center the model
     const box = new THREE.Box3().setFromObject(model);
@@ -85,11 +85,35 @@ loader.load('models/show.gltf', function (gltf) {
     });
     scene.add(model);
 
-    // Adjust camera and controls to fit model (less aggressive multipliers)
-    const maxDim = Math.max(size.x, size.y, size.z);
-    camera.position.set(0, maxDim * 0.7, -maxDim * 1.5);
-    camera.lookAt(0, -1, 0);
-    controls.target.set(0, -1, 0);
+    // Adjust camera and controls to fit model
+    const boundingSphere = box.getBoundingSphere(new THREE.Sphere());
+    const objectRadius = boundingSphere.radius;
+    const objectCenter = boundingSphere.center;
+
+    // Calculate optimal camera distance to fit the object in view
+    const fov = camera.fov * (Math.PI / 180);
+    const cameraZ = objectRadius / Math.sin(fov / 2);
+
+    // Set camera position and target
+    camera.position.set(objectCenter.x, objectCenter.y + objectRadius * 0.5, objectCenter.z + cameraZ * 1.5); // Position camera slightly further back and higher
+    camera.lookAt(objectCenter);
+    controls.target.copy(objectCenter);
+
+    // Adjust near and far planes based on object size
+    camera.near = Math.max(0.1, cameraZ - objectRadius * 2); // Ensure near is not too small
+    camera.far = cameraZ + objectRadius * 2;
+    camera.updateProjectionMatrix();
+
+    // Adjust sun shadow camera to encompass the model
+    const shadowCameraSize = objectRadius * 2.5; // A bit larger than the object radius
+    sun.shadow.camera.left = -shadowCameraSize;
+    sun.shadow.camera.right = shadowCameraSize;
+    sun.shadow.camera.top = shadowCameraSize;
+    sun.shadow.camera.bottom = -shadowCameraSize;
+    sun.shadow.camera.near = 0.1; // Can be small
+    sun.shadow.camera.far = objectRadius * 5; // Far enough to cover the model and its shadows
+    sun.shadow.camera.updateProjectionMatrix(); // Important to update after changing parameters
+
     controls.update();
 }, undefined, function (error) {
     console.error("GLTF load error:", error);
@@ -118,9 +142,11 @@ if (sunAzimuth && sunElevation) {
     updateSunPosition();
 }
 
+let isRotating = true;
+
 function animate() {
     requestAnimationFrame(animate);
-    if (model) {
+    if (model && isRotating) {
         model.rotation.y += 0.005;
     }
     controls.update();
@@ -128,6 +154,13 @@ function animate() {
 }
 
 animate();
+
+const toggleRotationButton = document.getElementById('toggleRotation');
+if (toggleRotationButton) {
+    toggleRotationButton.addEventListener('click', () => {
+        isRotating = !isRotating;
+    });
+}
 
 window.addEventListener('resize', function () {
     camera.aspect = window.innerWidth / window.innerHeight;
