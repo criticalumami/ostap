@@ -44,6 +44,7 @@ scene.add(ground);
 
 // Add OrbitControls
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enabled = false;
 controls.enableDamping = true;
 controls.dampingFactor = 0.08;
 controls.target.set(0, 0, 0);
@@ -166,4 +167,9 @@ window.addEventListener('resize', function () {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+document.getElementById('overlay').addEventListener('click', () => {
+    controls.enabled = true;
+    document.getElementById('overlay').style.display = 'none';
 });
