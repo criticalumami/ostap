@@ -51,7 +51,13 @@ controls.target.set(0, 0, 0);
 
 let model;
 const loader = new THREE.GLTFLoader();
-loader.load('models/diag.gltf', function (gltf) {
+
+// Get model name from URL
+const urlParams = new URLSearchParams(window.location.search);
+const modelName = urlParams.get('model') || 'urb';
+const modelPath = `models/${modelName}.gltf`;
+
+loader.load(modelPath, function (gltf) {
     model = gltf.scene;
     // Center the model
     const box = new THREE.Box3().setFromObject(model);
