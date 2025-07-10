@@ -52,10 +52,11 @@ controls.target.set(0, 0, 0);
 let model;
 const loader = new THREE.GLTFLoader();
 
-// Get model name from URL
-const urlParams = new URLSearchParams(window.location.search);
-const modelName = urlParams.get('model') || 'urb';
+// Get model name from URL hash
+console.log('URL hash:', window.location.hash);
+const modelName = window.location.hash.substring(1) || 'urb'; // Remove # and fallback to 'urb'
 const modelPath = `models/${modelName}.gltf`;
+console.log(`Loading model: ${modelPath}`);
 
 loader.load(modelPath, function (gltf) {
     model = gltf.scene;
