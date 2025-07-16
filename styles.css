@@ -264,3 +264,75 @@ input:checked + .slider:before {
         min-width: 160px;
     }
 }
+
+/* Styles for model selection UI */
+#model-selection {
+    display: none; /* Hidden by default, shown by JS */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255, 255, 255, 0.9);
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    z-index: 100;
+    text-align: center;
+    font-family: 'Courier New', Courier, monospace;
+    color: #333;
+}
+
+#model-selection h2 {
+    margin-top: 0;
+    color: #444;
+    font-size: 1.8em;
+    margin-bottom: 20px;
+}
+
+#model-dropdown {
+    width: 80%;
+    padding: 12px;
+    margin-bottom: 20px;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    font-size: 1.1em;
+    background-color: #f9f9f9;
+    color: #555;
+    -webkit-appearance: none; /* Remove default browser styling */
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23000000%22%20d%3D%22M287%2C114.7L159.7%2C242c-3.2%2C3.2-8.3%2C3.2-11.5%2C0L5.4%2C114.7c-3.2-3.2-3.2-8.3%2C0-11.5l11.5-11.5c3.2-3.2%2C8.3-3.2%2C11.5%2C0l120.7%2C120.7l120.7-120.7c3.2-3.2%2C8.3-3.2%2C11.5%2C0l11.5%2C11.5C290.2%2C106.4%2C290.2%2C111.5%2C287%2C114.7z%22%2F%3E%3C%2Fsvg%3E');
+    background-repeat: no-repeat;
+    background-position: right 10px top 50%;
+    background-size: 12px auto;
+    cursor: pointer;
+}
+
+#model-dropdown:focus {
+    border-color: #666;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(79,140,255,0.3);
+}
+
+#load-model-button {
+    background: #4CAF50; /* Green */
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1em;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.1s ease;
+    width: auto; /* Override previous width */
+    min-width: 150px;
+}
+
+#load-model-button:hover {
+    background-color: #45a049;
+    transform: translateY(-2px);
+}
+
+#load-model-button:active {
+    background-color: #3e8e41;
+    transform: translateY(0);
+}

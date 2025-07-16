@@ -11,6 +11,11 @@
         <div id="text">click/tap to control</div>
     </div>
     <div id="threejs-container"></div>
+    <div id="model-selection" style="display:none; position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:rgba(255,255,255,0.8); padding:20px; border-radius:10px; z-index:100;">
+        <h2>Select a Model</h2>
+        <select id="model-dropdown"></select>
+        <button id="load-model-button">Load Model</button>
+    </div>
     <div class="controls-panel">
         <input type="range" id="sunAzimuth" min="0" max="360" value="45" class="small-slider">
         <input type="range" id="sunElevation" min="0" max="90" value="60" class="small-slider">

@@ -52,80 +52,118 @@ controls.target.set(0, 0, 0);
 let model;
 const loader = new THREE.GLTFLoader();
 
-// Get model name from URL hash
-console.log('URL hash:', window.location.hash);
-const modelName = window.location.hash.substring(1) || 'urb'; // Remove # and fallback to 'urb'
-const modelPath = `models/${modelName}.gltf`;
-console.log(`Loading model: ${modelPath}`);
+const modelSelectionDiv = document.getElementById('model-selection');
+const modelDropdown = document.getElementById('model-dropdown');
+const loadModelButton = document.getElementById('load-model-button');
 
-loader.load(modelPath, function (gltf) {
-    model = gltf.scene;
-    // Center the model
-    const box = new THREE.Box3().setFromObject(model);
-    const center = box.getCenter(new THREE.Vector3());
-    const size = box.getSize(new THREE.Vector3());
-    model.position.sub(center); // Center at (0,0,0)
-    // Move model so its bottom touches the ground plane (y = -1)
-    const minY = box.min.y - center.y;
-    model.position.y -= minY + 1; // -1 is the ground plane's y position
+const availableModels = ['bei', 'diag', 'model', 'ostap', 'port_three', 'show', 'urb']; // From previous glob
 
-    // Add thin black strokes (edges) to each mesh
-    model.traverse((child) => {
-        if (child.isMesh) {
-            child.castShadow = true;
-            child.receiveShadow = true;
-            // Restore original material (remove forced grayscale)
-            // If you want to keep the model's original material, do not overwrite it:
-            // (Just remove the child.material = ... block entirely)
-            // If you want to ensure shadows, you can keep the castShadow/receiveShadow lines.
-            // No material assignment here.
-            // Add edge lines
-            const edges = new THREE.EdgesGeometry(child.geometry);
-            const line = new THREE.LineSegments(
-                edges,
-                new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 1 })
-            );
-            line.position.copy(child.position);
-            line.rotation.copy(child.rotation);
-            line.scale.copy(child.scale);
-            child.add(line);
+function loadModel(modelName) {
+    const modelPath = `models/${modelName}.gltf`;
+    console.log(`Loading model: ${modelPath}`);
+
+    loader.load(modelPath, function (gltf) {
+        if (model) { // Remove previous model if exists
+            scene.remove(model);
+        }
+        model = gltf.scene;
+        // Center the model
+        const box = new THREE.Box3().setFromObject(model);
+        const center = box.getCenter(new THREE.Vector3());
+        const size = box.getSize(new THREE.Vector3());
+        model.position.sub(center); // Center at (0,0,0)
+        // Move model so its bottom touches the ground plane (y = -1)
+        const minY = box.min.y - center.y;
+        model.position.y -= minY + 1; // -1 is the ground plane's y position
+
+        // Add thin black strokes (edges) to each mesh
+        model.traverse((child) => {
+            if (child.isMesh) {
+                child.castShadow = true;
+                child.receiveShadow = true;
+                const edges = new THREE.EdgesGeometry(child.geometry);
+                const line = new THREE.LineSegments(
+                    edges,
+                    new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 1 })
+                );
+                line.position.copy(child.position);
+                line.rotation.copy(child.rotation);
+                line.scale.copy(child.scale);
+                child.add(line);
+            }
+        });
+        scene.add(model);
+
+        // Adjust camera and controls to fit model
+        const boundingSphere = box.getBoundingSphere(new THREE.Sphere());
+        const objectRadius = boundingSphere.radius;
+        const objectCenter = boundingSphere.center;
+
+        // Calculate optimal camera distance to fit the object in view
+        const fov = camera.fov * (Math.PI / 180);
+        const cameraZ = objectRadius / Math.sin(fov / 2);
+
+        // Set camera position and target
+        camera.position.set(objectCenter.x, objectCenter.y + objectRadius * 0.5, objectCenter.z + cameraZ * 1.5); // Position camera slightly further back and higher
+        camera.lookAt(objectCenter);
+        controls.target.copy(objectCenter);
+
+        // Adjust near and far planes based on object size
+        camera.near = Math.max(0.1, cameraZ - objectRadius * 2); // Ensure near is not too small
+        camera.far = cameraZ + objectRadius * 2;
+        camera.updateProjectionMatrix();
+
+        // Adjust sun shadow camera to encompass the model
+        const shadowCameraSize = objectRadius * 2.5; // A bit larger than the object radius
+        sun.shadow.camera.left = -shadowCameraSize;
+        sun.shadow.camera.right = shadowCameraSize;
+        sun.shadow.camera.top = shadowCameraSize;
+        sun.shadow.camera.bottom = -shadowCameraSize;
+        sun.shadow.camera.near = 0.1; // Can be small
+        sun.shadow.camera.far = objectRadius * 5; // Far enough to cover the model and its shadows
+        sun.shadow.camera.updateProjectionMatrix(); // Important to update after changing parameters
+
+        controls.update();
+    }, undefined, function (error) {
+        console.error("GLTF load error:", error);
+        alert("Failed to load model. Please try again.");
+    });
+}
+
+// Check URL hash for model name
+const initialModelName = window.location.hash.substring(1);
+
+if (initialModelName && availableModels.includes(initialModelName)) {
+    loadModel(initialModelName);
+    // Overlay remains visible, waiting for click
+    document.getElementById('overlay').style.backgroundColor = 'white';
+    document.getElementById('text').style.color = 'gray';
+    controls.enabled = false; // Controls disabled until overlay is clicked
+} else {
+    // No valid hash, show model selection
+    modelSelectionDiv.style.display = 'block';
+    controls.enabled = false; // Disable controls until model is loaded
+    document.getElementById('overlay').style.display = 'none'; // Hide overlay
+
+    // Populate dropdown
+    availableModels.forEach(model => {
+        const option = document.createElement('option');
+        option.value = model;
+        option.textContent = model;
+        modelDropdown.appendChild(option);
+    });
+
+    // Load selected model on button click
+    loadModelButton.addEventListener('click', () => {
+        const selectedModel = modelDropdown.value;
+        if (selectedModel) {
+            loadModel(selectedModel);
+            modelSelectionDiv.style.display = 'none'; // Hide selection after loading
+            controls.enabled = true; // Enable controls after model loads
+            document.getElementById('overlay').style.display = 'none'; // Ensure overlay is hidden
         }
     });
-    scene.add(model);
-
-    // Adjust camera and controls to fit model
-    const boundingSphere = box.getBoundingSphere(new THREE.Sphere());
-    const objectRadius = boundingSphere.radius;
-    const objectCenter = boundingSphere.center;
-
-    // Calculate optimal camera distance to fit the object in view
-    const fov = camera.fov * (Math.PI / 180);
-    const cameraZ = objectRadius / Math.sin(fov / 2);
-
-    // Set camera position and target
-    camera.position.set(objectCenter.x, objectCenter.y + objectRadius * 0.5, objectCenter.z + cameraZ * 1.5); // Position camera slightly further back and higher
-    camera.lookAt(objectCenter);
-    controls.target.copy(objectCenter);
-
-    // Adjust near and far planes based on object size
-    camera.near = Math.max(0.1, cameraZ - objectRadius * 2); // Ensure near is not too small
-    camera.far = cameraZ + objectRadius * 2;
-    camera.updateProjectionMatrix();
-
-    // Adjust sun shadow camera to encompass the model
-    const shadowCameraSize = objectRadius * 2.5; // A bit larger than the object radius
-    sun.shadow.camera.left = -shadowCameraSize;
-    sun.shadow.camera.right = shadowCameraSize;
-    sun.shadow.camera.top = shadowCameraSize;
-    sun.shadow.camera.bottom = -shadowCameraSize;
-    sun.shadow.camera.near = 0.1; // Can be small
-    sun.shadow.camera.far = objectRadius * 5; // Far enough to cover the model and its shadows
-    sun.shadow.camera.updateProjectionMatrix(); // Important to update after changing parameters
-
-    controls.update();
-}, undefined, function (error) {
-    console.error("GLTF load error:", error);
-});
+}
 
 // Sun orientation slider logic
 const sunAzimuth = document.getElementById('sunAzimuth');
@@ -180,3 +218,27 @@ document.getElementById('overlay').addEventListener('click', () => {
     controls.enabled = true;
     document.getElementById('overlay').style.display = 'none';
 });
+
+
+// Add a simple loading manager to track progress
+const manager = new THREE.LoadingManager();
+manager.onStart = function (url, itemsLoaded, itemsTotal) {
+    console.log('Started loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.');
+};
+
+manager.onLoad = function () {
+    console.log('Loading complete!');
+};
+
+manager.onProgress = function (url, itemsLoaded, itemsTotal) {
+    console.log('Loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.');
+};
+
+manager.onError = function (url) {
+    console.log('There was an error loading ' + url);
+};
+
+// Pass the manager to the loader
+const loaderWithManager = new THREE.GLTFLoader(manager);
+// Use this loader for your models
+// loaderWithManager.load(...)
