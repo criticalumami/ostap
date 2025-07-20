@@ -56,7 +56,7 @@ const modelSelectionDiv = document.getElementById('model-selection');
 const modelDropdown = document.getElementById('model-dropdown');
 const loadModelButton = document.getElementById('load-model-button');
 
-const availableModels = ['bei', 'diag', 'model', 'ostap', 'port_three', 'show', 'urb']; // From previous glob
+const availableModels = ['bei', 'diag', 'mies', 'model', 'ostap', 'port_three', 'show', 'urb']; // From previous glob
 
 function loadModel(modelName) {
     const modelPath = `models/${modelName}.gltf`;
