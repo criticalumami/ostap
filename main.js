@@ -7,7 +7,7 @@ camera.position.set(0, 2, 5);
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.shadowMap.type = THREE.PCFShadowMap;
 document.getElementById('threejs-container').appendChild(renderer.domElement);
 
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
@@ -24,6 +24,8 @@ sun.shadow.camera.left = -25;
 sun.shadow.camera.right = 25;
 sun.shadow.camera.top = 25;
 sun.shadow.camera.bottom = -25;
+sun.shadow.bias = -0.001;
+sun.shadow.normalBias = 0.05;
 scene.add(sun);
 
 const groundGeo = new THREE.PlaneGeometry(100, 100);
@@ -71,10 +73,14 @@ function loadModel(modelName) {
             if (child.isMesh) {
                 child.castShadow = true;
                 child.receiveShadow = true;
+                if (child.material.map) {
+                    child.material.map.anisotropy = renderer.capabilities.getMaxAnisotropy();
+                    child.material.map.minFilter = THREE.LinearMipmapLinearFilter;
+                }
                 const edges = new THREE.EdgesGeometry(child.geometry);
                 const line = new THREE.LineSegments(
                     edges,
-                    new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 0.5 })
+                    new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 0.1 })
                 );
                 child.add(line);
             }
