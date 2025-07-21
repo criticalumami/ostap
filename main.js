@@ -80,7 +80,7 @@ function loadModel(modelName) {
                 const edges = new THREE.EdgesGeometry(child.geometry);
                 const line = new THREE.LineSegments(
                     edges,
-                    new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 0.1 })
+                    new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 0.01 })
                 );
                 child.add(line);
             }
