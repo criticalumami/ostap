@@ -81,12 +81,7 @@ function loadModel(modelName) {
                     child.material.map.anisotropy = renderer.capabilities.getMaxAnisotropy();
                     child.material.map.minFilter = THREE.LinearMipmapLinearFilter;
                 }
-                const edges = new THREE.EdgesGeometry(child.geometry);
-                const line = new THREE.LineSegments(
-                    edges,
-                    new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 0.01, clippingPlanes: [clipPlane] })
-                );
-                child.add(line);
+                
             }
         });
         scene.add(model);
