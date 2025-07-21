@@ -50,6 +50,19 @@ canvas {
     align-items: flex-start;
 }
 
+.section-cut-panel {
+    position: absolute;
+    bottom: 16px;
+    left: 16px;
+    background: none;
+    padding: 0;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-start;
+}
+
 .button-panel {
     position: absolute;
     top: 16px;
@@ -63,24 +76,28 @@ canvas {
     align-items: flex-end;
 }
 
-.controls-panel input[type="range"] {
+.controls-panel input[type="range"],
+.section-cut-panel input[type="range"] {
     width: 60px;
     height: 10px;
     -webkit-appearance: none;
     background: transparent;
 }
 
-.controls-panel input[type="range"]:focus {
+.controls-panel input[type="range"]:focus,
+.section-cut-panel input[type="range"]:focus {
     outline: none;
 }
 
-.controls-panel input[type="range"]::-webkit-slider-runnable-track {
+.controls-panel input[type="range"]::-webkit-slider-runnable-track,
+.section-cut-panel input[type="range"]::-webkit-slider-runnable-track {
     height: 4px;
     background: linear-gradient(90deg, #bbb 0%, #444 100%);
     border-radius: 2px;
 }
 
-.controls-panel input[type="range"]::-webkit-slider-thumb {
+.controls-panel input[type="range"]::-webkit-slider-thumb,
+.section-cut-panel input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
     width: 14px;
@@ -92,7 +109,8 @@ canvas {
     margin-top: -5px;
 }
 
-.controls-panel input[type="range"]::-moz-range-thumb {
+.controls-panel input[type="range"]::-moz-range-thumb,
+.section-cut-panel input[type="range"]::-moz-range-thumb {
     width: 14px;
     height: 14px;
     border-radius: 50%;
@@ -101,7 +119,8 @@ canvas {
     cursor: pointer;
 }
 
-.controls-panel input[type="range"]::-ms-thumb {
+.controls-panel input[type="range"]::-ms-thumb,
+.section-cut-panel input[type="range"]::-ms-thumb {
     width: 14px;
     height: 14px;
     border-radius: 50%;
@@ -110,16 +129,19 @@ canvas {
     cursor: pointer;
 }
 
-.controls-panel input[type="range"]::-ms-fill-lower {
+.controls-panel input[type="range"]::-ms-fill-lower,
+.section-cut-panel input[type="range"]::-ms-fill-lower {
     background: #bbb;
     border-radius: 2px;
 }
-.controls-panel input[type="range"]::-ms-fill-upper {
+.controls-panel input[type="range"]::-ms-fill-upper,
+.section-cut-panel input[type="range"]::-ms-fill-upper {
     background: #444;
     border-radius: 2px;
 }
 
-.controls-panel input[type="range"]::-moz-range-track {
+.controls-panel input[type="range"]::-moz-range-track,
+.section-cut-panel input[type="range"]::-moz-range-track {
     height: 4px;
     background: linear-gradient(90deg, #bbb 0%, #444 100%);
     border-radius: 2px;

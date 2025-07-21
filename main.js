@@ -8,6 +8,10 @@ const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFShadowMap;
+renderer.localClippingEnabled = true;
+
+const clipPlane = new THREE.Plane(new THREE.Vector3(0, -1, 0), 0);
+clipPlane.enabled = false;
 document.getElementById('threejs-container').appendChild(renderer.domElement);
 
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
@@ -51,7 +55,7 @@ const loadModelButton = document.getElementById('load-model-button');
 const overlay = document.getElementById('overlay');
 const textElement = document.getElementById('text');
 
-const availableModels = ['bei', 'diag', 'mies', 'ostap', 'port_three', 'show', 'urb', 'vag'];
+const availableModels = ['bei', 'diag', 'mies', 'ostap', 'port_three', 'show', 'urb', 'vag', 'ss'];
 
 function loadModel(modelName) {
     const modelPath = `models/${modelName}.gltf`;
@@ -80,12 +84,29 @@ function loadModel(modelName) {
                 const edges = new THREE.EdgesGeometry(child.geometry);
                 const line = new THREE.LineSegments(
                     edges,
-                    new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 0.01 })
+                    new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 0.01, clippingPlanes: [clipPlane] })
                 );
                 child.add(line);
             }
         });
         scene.add(model);
+
+        const modelBox = new THREE.Box3().setFromObject(model);
+        const modelHeight = modelBox.max.y - modelBox.min.y;
+        const modelCenterY = modelBox.min.y + modelHeight / 2;
+
+        const sectionCutSlider = document.getElementById('sectionCut');
+        sectionCutSlider.min = (modelBox.min.y - 0.1).toString();
+        sectionCutSlider.max = (modelBox.max.y + 0.1).toString();
+        sectionCutSlider.value = (modelBox.max.y + 0.1).toString(); // Show entire model by default
+        clipPlane.constant = parseFloat(sectionCutSlider.value);
+
+        model.traverse((child) => {
+            if (child.isMesh && child.material) {
+                child.material.clippingPlanes = [clipPlane];
+                child.material.needsUpdate = true;
+            }
+        });
 
         const boundingSphere = box.getBoundingSphere(new THREE.Sphere());
         const objectRadius = boundingSphere.radius;
@@ -179,6 +200,15 @@ const toggleRotationCheckbox = document.getElementById('toggleRotation');
 if (toggleRotationCheckbox) {
     toggleRotationCheckbox.addEventListener('change', () => {
         isRotating = toggleRotationCheckbox.checked;
+    });
+}
+
+const sectionCutSlider = document.getElementById('sectionCut');
+
+if (sectionCutSlider) {
+    sectionCutSlider.addEventListener('input', () => {
+        clipPlane.enabled = true;
+        clipPlane.constant = parseFloat(sectionCutSlider.value);
     });
 }
 
