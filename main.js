@@ -49,7 +49,7 @@ const loadModelButton = document.getElementById('load-model-button');
 const overlay = document.getElementById('overlay');
 const textElement = document.getElementById('text');
 
-const availableModels = ['bei', 'diag', 'mies', 'ostap', 'port_three', 'show', 'urb'];
+const availableModels = ['bei', 'diag', 'mies', 'ostap', 'port_three', 'show', 'urb', 'vag'];
 
 function loadModel(modelName) {
     const modelPath = `models/${modelName}.gltf`;
