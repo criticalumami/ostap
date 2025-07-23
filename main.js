@@ -20,8 +20,8 @@ scene.add(ambientLight);
 const sun = new THREE.DirectionalLight(0xfff7e0, 1.0);
 sun.position.set(15, 25, 20);
 sun.castShadow = true;
-sun.shadow.mapSize.width = 2048;
-sun.shadow.mapSize.height = 2048;
+sun.shadow.mapSize.width = 4096;
+sun.shadow.mapSize.height = 4096;
 sun.shadow.camera.near = 1;
 sun.shadow.camera.far = 60;
 sun.shadow.camera.left = -25;
@@ -32,8 +32,8 @@ sun.shadow.bias = -0.001;
 sun.shadow.normalBias = 0.05;
 scene.add(sun);
 
-const groundGeo = new THREE.PlaneGeometry(100, 100);
-const groundMat = new THREE.MeshPhongMaterial({ color: 0xf0f0f0, depthWrite: true });
+const groundGeo = new THREE.PlaneGeometry(10000, 10000);
+const groundMat = new THREE.MeshPhongMaterial({ color: 0xf5f5f5, depthWrite: true });
 const ground = new THREE.Mesh(groundGeo, groundMat);
 ground.rotation.x = -Math.PI / 2;
 ground.position.y = -1;
@@ -81,7 +81,12 @@ function loadModel(modelName) {
                     child.material.map.anisotropy = renderer.capabilities.getMaxAnisotropy();
                     child.material.map.minFilter = THREE.LinearMipmapLinearFilter;
                 }
-                
+
+                // Add EdgesGeometry for non-coplanar edges
+                const thresholdAngle = 30; // degrees
+                const edges = new THREE.EdgesGeometry(child.geometry, THREE.MathUtils.degToRad(thresholdAngle));
+                const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x808080, linewidth: 1 }));
+                child.add(line);
             }
         });
         scene.add(model);
@@ -100,6 +105,7 @@ function loadModel(modelName) {
             if (child.isMesh && child.material) {
                 child.material.clippingPlanes = [clipPlane];
                 child.material.needsUpdate = true;
+                child.material.clipShadows = true;
             }
         });
 
@@ -118,14 +124,11 @@ function loadModel(modelName) {
         camera.far = cameraZ + objectRadius * 2;
         camera.updateProjectionMatrix();
 
-        const shadowCameraSize = objectRadius * 2;
-        sun.shadow.camera.left = -shadowCameraSize;
-        sun.shadow.camera.right = shadowCameraSize;
-        sun.shadow.camera.top = shadowCameraSize;
-        sun.shadow.camera.bottom = -shadowCameraSize;
-        sun.shadow.camera.near = 0.1;
-        sun.shadow.camera.far = objectRadius * 4;
-        sun.shadow.camera.updateProjectionMatrix();
+        const modelSize = new THREE.Vector3();
+        modelBox.getSize(modelSize);
+        const maxDim = Math.max(modelSize.x, modelSize.y, modelSize.z);
+
+        updateShadowCameraFrustum(modelBox, sun, modelBox.getCenter(new THREE.Vector3()), maxDim);
 
         controls.update();
         textElement.textContent = 'click/tap to control';
@@ -137,6 +140,44 @@ function loadModel(modelName) {
         alert("Failed to load model. Please try again.");
         overlay.style.display = 'none';
     });
+}
+
+// New function to update shadow camera frustum
+function updateShadowCameraFrustum(modelBoundingBox, sunLight, modelCenter, maxDimension) {
+    const lightDirection = sunLight.position.clone().normalize();
+
+    const points = [
+        new THREE.Vector3(modelBoundingBox.min.x, modelBoundingBox.min.y, modelBoundingBox.min.z),
+        new THREE.Vector3(modelBoundingBox.min.x, modelBoundingBox.min.y, modelBoundingBox.max.z),
+        new THREE.Vector3(modelBoundingBox.min.x, modelBoundingBox.max.y, modelBoundingBox.min.z),
+        new THREE.Vector3(modelBoundingBox.min.x, modelBoundingBox.max.y, modelBoundingBox.max.z),
+        new THREE.Vector3(modelBoundingBox.max.x, modelBoundingBox.min.y, modelBoundingBox.min.z),
+        new THREE.Vector3(modelBoundingBox.max.x, modelBoundingBox.min.y, modelBoundingBox.max.z),
+        new THREE.Vector3(modelBoundingBox.max.x, modelBoundingBox.max.y, modelBoundingBox.min.z),
+        new THREE.Vector3(modelBoundingBox.max.x, modelBoundingBox.max.y, modelBoundingBox.max.z),
+    ];
+
+    let minZ = Infinity;
+    let maxZ = -Infinity;
+
+    for (let i = 0; i < points.length; i++) {
+        const point = points[i];
+        const distance = point.dot(lightDirection);
+        minZ = Math.min(minZ, distance);
+        maxZ = Math.max(maxZ, distance);
+    }
+
+    // Adjust shadow camera size based on the model's dimensions
+    const shadowCameraSize = maxDimension * 1.5; // A bit larger than the max dimension to give some padding
+
+    sunLight.shadow.camera.left = -shadowCameraSize / 2;
+    sunLight.shadow.camera.right = shadowCameraSize / 2;
+    sunLight.shadow.camera.top = shadowCameraSize / 2;
+    sunLight.shadow.camera.bottom = -shadowCameraSize / 2;
+
+    sunLight.shadow.camera.near = Math.max(0.1, sunLight.position.length() + minZ - maxDimension * 0.5);
+    sunLight.shadow.camera.far = sunLight.position.length() + maxZ + maxDimension * 0.5;
+    sunLight.shadow.camera.updateProjectionMatrix();
 }
 
 function showModelSelection() {
@@ -204,6 +245,18 @@ if (sectionCutSlider) {
     sectionCutSlider.addEventListener('input', () => {
         clipPlane.enabled = true;
         clipPlane.constant = parseFloat(sectionCutSlider.value);
+
+        // Create a temporary bounding box representing the clipped portion
+        const tempModelBox = new THREE.Box3().setFromObject(model);
+        // The clipping plane cuts everything BELOW y = -clipPlane.constant
+        const effectiveMinY = Math.max(tempModelBox.min.y, -clipPlane.constant);
+        tempModelBox.min.y = effectiveMinY;
+
+        const modelSize = new THREE.Vector3();
+        tempModelBox.getSize(modelSize);
+        const maxDim = Math.max(modelSize.x, modelSize.y, modelSize.z);
+
+        updateShadowCameraFrustum(tempModelBox, sun, tempModelBox.getCenter(new THREE.Vector3()), maxDim);
     });
 }
 
@@ -228,5 +281,9 @@ overlay.addEventListener('click', () => {
     if (model) {
         controls.enabled = true;
         overlay.style.display = 'none';
+        isRotating = false; // Stop rotation on first click/tap
+        if (toggleRotationCheckbox) {
+            toggleRotationCheckbox.checked = false;
+        }
     }
 });
