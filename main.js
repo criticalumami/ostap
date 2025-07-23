@@ -46,6 +46,7 @@ controls.enableDamping = true;
 controls.dampingFactor = 0.07;
 controls.target.set(0, 0, 0);
 
+
 let model;
 const loader = new THREE.GLTFLoader();
 
